@@ -1,0 +1,15 @@
+# Core dependencies
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# API Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# Type hints and validation
+typing-extensions>=4.8.0
+
+# Utilities
+python-dotenv>=1.0.0
