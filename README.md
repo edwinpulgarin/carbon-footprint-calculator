@@ -1,4 +1,4 @@
-# Carbon Footprint Calculator - Huella de Carbono 🌍
+# Carbon Footprint Calculator - Huella de Carbono
 
 [![CI Pipeline](https://github.com/edwinpulgarin/carbon-footprint-calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/edwinpulgarin/carbon-footprint-calculator/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -7,31 +7,31 @@
 
 Sistema profesional de cálculo de Huella de Carbono basado en la metodología de **Análisis Insumo-Producto (MIP)** utilizando datos oficiales de la Matriz Insumo-Producto de Colombia (DANE) y Cuentas Ambientales.
 
-**✅ Sistema Validado**: 100% de precisión con datos reales 2017-2021 ([Ver Reporte](REPORTE_VALIDACION.md))
+**Sistema Validado**: 100% de precisión con datos reales 2017-2021 ([Ver Reporte](REPORTE_VALIDACION.md))
 
-🚀 **Deploy Rápido**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - En línea en 10 minutos
-
----
-
-## 📋 Contenidos
-
-- [Características](#-características) | [Metodología](#-metodología-científica) | [Instalación](#-instalación) | [API REST](#-api-rest) | [Deploy](#-despliegue) | [Documentación Completa](#-referencias-científicas)
+**Deploy Rápido**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - En línea en 10 minutos
 
 ---
 
-## ✨ Características
+## Contenidos
 
-- ✅ **68 Sectores** económicos de Colombia
-- ✅ **7 Indicadores** ambientales (CO₂, CH₄, N₂O + otros)
-- ✅ **Matrices Leontief y Ghosh** (encadenamientos productivos)
-- ✅ **Multiplicadores ambientales** directos + indirectos
-- ✅ **API REST** con 8 endpoints documentados
-- ✅ **Validación 100%** con datos reales 2017-2021
-- ✅ **Dashboard web** interactivo incluido
+- [Características](#características) | [Metodología](#metodología-científica) | [Instalación](#instalación-rápida) | [API REST](#api-rest) | [Deploy](#despliegue) | [Documentación Completa](#referencias-principales)
 
 ---
 
-## 🔬 Metodología Científica
+## Características
+
+- **68 Sectores** económicos de Colombia
+- **7 Indicadores** ambientales (CO₂, CH₄, N₂O + otros)
+- **Matrices Leontief y Ghosh** (encadenamientos productivos)
+- **Multiplicadores ambientales** directos + indirectos
+- **API REST** con 8 endpoints documentados
+- **Validación 100%** con datos reales 2017-2021
+- **Dashboard web** interactivo incluido
+
+---
+
+## Metodología Científica
 
 ### **Fundamento Teórico**
 
@@ -71,7 +71,7 @@ x = L × F
 
 **Interpretación**: `lᵢⱼ` = producción total de i (directa + indirecta) para satisfacer 1 unidad de demanda final de j
 
-**Propiedad validada**: `L(I - A) = I` ✅
+**Propiedad validada**: `L(I - A) = I`
 
 #### **Inversa de Ghosh (G)** - Forward Linkages
 ```
@@ -99,7 +99,7 @@ Dₐ = D × L
 
 **Interpretación**: Emisiones totales (directas + indirectas) por unidad de demanda final
 
-**Propiedad**: `Dₐ ≥ D` (siempre) ✅
+**Propiedad**: `Dₐ ≥ D` (siempre)
 
 ### **3. Encadenamientos Ambientales**
 
@@ -146,17 +146,17 @@ CF_total = Σₖ∈GEI Σⱼ (Dₐ)ₖⱼ × yⱼ
 
 Sistema valida automáticamente:
 
-✅ **L(I-A) = I** (error < 10⁻⁴)
-✅ **Diagonal L ≥ 1**
-✅ **Σᵢ aᵢⱼ < 1** (productividad)
-✅ **Dₐ ≥ D** (multiplicadores)
-✅ **D×x = emisiones totales** (reconstrucción)
+- **L(I-A) = I** (error < 10⁻⁴)
+- **Diagonal L ≥ 1**
+- **Σᵢ aᵢⱼ < 1** (productividad)
+- **Dₐ ≥ D** (multiplicadores)
+- **D×x = emisiones totales** (reconstrucción)
 
-**Resultado**: **100%** validado en datos 2017-2021 🎯
+**Resultado**: 100% validado en datos 2017-2021
 
 ---
 
-## 🚀 Instalación Rápida
+## Instalación Rápida
 
 ```bash
 # 1. Clonar
@@ -178,9 +178,9 @@ Los datos (Excel) ya están incluidos en `data/raw/`
 
 ---
 
-## 🌐 API REST
+## API REST
 
-### **Endpoints Principales**
+### Endpoints Principales
 
 ```bash
 # Health check
@@ -200,7 +200,7 @@ POST /calculate/priorities  # Prioridades mitigación
 GET  /statistics/summary
 ```
 
-### **Ejemplo de Uso**
+### Ejemplo de Uso
 
 ```bash
 curl -X POST http://localhost:8000/calculate/product \
@@ -224,9 +224,9 @@ curl -X POST http://localhost:8000/calculate/product \
 
 ---
 
-## ☁️ Despliegue
+## Despliegue
 
-### **Opción 1: Railway (5 min)** ⭐ RECOMENDADO
+### Opción 1: Railway (5 min) - RECOMENDADO
 
 ```bash
 1. https://railway.app → Login GitHub
@@ -238,7 +238,7 @@ curl -X POST http://localhost:8000/calculate/product \
 
 **Gratis** hasta $5/mes
 
-### **Opción 2: Otros**
+### Opción 2: Otros
 
 - **Render**: Ver [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 - **Google Cloud**: Ver [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
@@ -248,9 +248,9 @@ curl -X POST http://localhost:8000/calculate/product \
 
 ---
 
-## 💻 Uso Programático
+## Uso Programático
 
-### **Python**
+### Python
 ```python
 from src.services.carbon_calculator import CarbonFootprintCalculator
 
@@ -262,7 +262,7 @@ footprint = calculator.calculate_product_footprint(
 )
 ```
 
-### **JavaScript**
+### JavaScript
 ```javascript
 const response = await fetch('http://localhost:8000/calculate/product', {
   method: 'POST',
@@ -271,7 +271,7 @@ const response = await fetch('http://localhost:8000/calculate/product', {
 });
 ```
 
-### **R**
+### R
 ```r
 library(httr)
 POST("http://localhost:8000/calculate/product",
@@ -281,19 +281,19 @@ POST("http://localhost:8000/calculate/product",
 
 ---
 
-## 📊 Resultados Validados
+## Resultados Validados
 
-### **Colombia 2017-2021**
+### Colombia 2017-2021
 
 | Métrica | 2017 | 2019 | 2021 | Tendencia |
 |---------|------|------|------|-----------|
-| **Producción** (M COP) | 1.6M | 1.9M | 2.1M | ↗️ +32% |
-| **Emisiones GEI** (ton) | 123k | 126k | 117k | ↘️ -5% |
-| **Intensidad** (ton/M) | 76.2 | 67.8 | 54.8 | ↘️ -28% |
+| **Producción** (M COP) | 1.6M | 1.9M | 2.1M | +32% |
+| **Emisiones GEI** (ton) | 123k | 126k | 117k | -5% |
+| **Intensidad** (ton/M) | 76.2 | 67.8 | 54.8 | -28% |
 
-**Conclusión**: Desacoplamiento economía-emisiones ✅
+**Conclusión**: Desacoplamiento economía-emisiones
 
-### **Sectores Clave Identificados**
+### Sectores Clave Identificados
 
 1. **Coquización y refinación** (BL≈24, FL≈21)
 2. **Elaboración de azúcar** (BL≈15, FL≈16)
@@ -303,7 +303,7 @@ POST("http://localhost:8000/calculate/product",
 
 ---
 
-## 📁 Estructura
+## Estructura del Proyecto
 
 ```
 carbon-footprint-calculator/
@@ -320,7 +320,7 @@ carbon-footprint-calculator/
 
 ---
 
-## 📚 Referencias Principales
+## Referencias Principales
 
 1. **Miller & Blair (2009)**. *Input-Output Analysis: Foundations and Extensions*. Cambridge Univ. Press.
 2. **Eurostat (2008)**. *Manual of Supply, Use and Input-Output Tables*.
@@ -329,7 +329,7 @@ carbon-footprint-calculator/
 
 ---
 
-## 🤝 Contribución
+## Contribución
 
 ```bash
 git checkout -b feature/nueva-funcionalidad
@@ -342,19 +342,19 @@ git push origin feature/nueva-funcionalidad
 
 ---
 
-## 📝 Licencia
+## Licencia
 
 MIT License - Ver [LICENSE](LICENSE)
 
 ---
 
-## 👥 Autor
+## Autor
 
 **Edwin Pulgarin** - [GitHub](https://github.com/edwinpulgarin)
 
 ---
 
-## 📞 Soporte
+## Soporte
 
 - **Issues**: https://github.com/edwinpulgarin/carbon-footprint-calculator/issues
 - **Docs**: Ver archivos `.md` en el repositorio
@@ -362,11 +362,11 @@ MIT License - Ver [LICENSE](LICENSE)
 
 ---
 
-**🌍 Contribuyendo a un futuro sostenible mediante análisis económico-ambiental riguroso.**
+**Contribuyendo a un futuro sostenible mediante análisis económico-ambiental riguroso.**
 
 ---
 
-### 📖 Documentación Adicional
+## Documentación Adicional
 
 - [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - Deploy en 10 minutos
 - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Guía completa deployment
