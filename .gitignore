@@ -96,3 +96,9 @@ Thumbs.db
 # Reports
 *.json
 bandit-report.json
+
+# Validation temporary files
+validation_output.txt
+explore_data.py
+validate_calculations.py
+validation_results.json
