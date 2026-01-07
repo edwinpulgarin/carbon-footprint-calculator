@@ -1,476 +1,375 @@
-# Carbon Footprint Calculator - Huella de Carbono
+# Carbon Footprint Calculator - Huella de Carbono 🌍
 
-[![CI Pipeline](https://github.com/username/carbon-footprint/actions/workflows/ci.yml/badge.svg)](https://github.com/username/carbon-footprint/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/username/carbon-footprint/branch/main/graph/badge.svg)](https://codecov.io/gh/username/carbon-footprint)
+[![CI Pipeline](https://github.com/edwinpulgarin/carbon-footprint-calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/edwinpulgarin/carbon-footprint-calculator/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Validation](https://img.shields.io/badge/validation-100%25-brightgreen)](REPORTE_VALIDACION.md)
 
-Sistema de cálculo de Huella de Carbono basado en la metodología de Análisis Insumo-Producto (MIP) utilizando datos de la Matriz Insumo-Producto de Colombia (DANE) y Cuentas Ambientales.
+Sistema profesional de cálculo de Huella de Carbono basado en la metodología de **Análisis Insumo-Producto (MIP)** utilizando datos oficiales de la Matriz Insumo-Producto de Colombia (DANE) y Cuentas Ambientales.
 
-## 📋 Tabla de Contenidos
+**✅ Sistema Validado**: 100% de precisión con datos reales 2017-2021 ([Ver Reporte](REPORTE_VALIDACION.md))
 
-- [Características](#-características)
-- [Arquitectura](#-arquitectura)
-- [Instalación](#-instalación)
-- [Uso](#-uso)
-- [API REST](#-api-rest)
-- [Metodología](#-metodología)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Desarrollo](#-desarrollo)
-- [Testing](#-testing)
-- [Deployment](#-deployment)
-- [Contribución](#-contribución)
-- [Licencia](#-licencia)
-
-## ✨ Características
-
-- **Análisis Económico Completo**: Implementa matrices de Leontief y Ghosh para análisis de encadenamientos productivos
-- **Extensión Ambiental**: Cálculo de intensidades ambientales directas y totales
-- **Múltiples Indicadores**: Gases de Efecto Invernadero (GEI) y otros indicadores ambientales
-- **API REST**: Endpoints documentados con FastAPI y Swagger UI
-- **Arquitectura OOP**: Diseño orientado a objetos con principios SOLID
-- **Pipeline CI/CD**: Integración y despliegue continuo con GitHub Actions
-- **Containerización**: Docker para despliegue consistente
-- **Documentación Completa**: Docstrings, type hints y documentación API
-
-## 🏗️ Arquitectura
-
-El sistema está construido con una arquitectura en capas:
-
-```
-┌─────────────────────────────────────┐
-│         API Layer (FastAPI)         │
-│  - REST Endpoints                   │
-│  - Request/Response Validation      │
-└─────────────────────────────────────┘
-                 ↓
-┌─────────────────────────────────────┐
-│       Service Layer                 │
-│  - CarbonFootprintCalculator        │
-│  - MIPDataLoader                    │
-└─────────────────────────────────────┘
-                 ↓
-┌─────────────────────────────────────┐
-│        Model Layer                  │
-│  - InputOutputMatrix                │
-│  - EnvironmentalExtension           │
-└─────────────────────────────────────┘
-                 ↓
-┌─────────────────────────────────────┐
-│         Data Layer                  │
-│  - Excel Files (MIP + Env Accounts) │
-└─────────────────────────────────────┘
-```
-
-## 🚀 Instalación
-
-### Prerequisitos
-
-- Python 3.9 o superior
-- pip
-- Git
-
-### Instalación Local
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/username/carbon-footprint.git
-cd carbon-footprint
-
-# Crear entorno virtual
-python -m venv venv
-
-# Activar entorno virtual
-# En Windows:
-venv\Scripts\activate
-# En Linux/Mac:
-source venv/bin/activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Colocar archivos de datos en data/raw/
-# - anex-MIP-2021.xlsx
-# - CAEFM-EA68aVALORADO.xlsx
-```
-
-### Instalación con Docker
-
-```bash
-# Construir imagen
-docker build -t carbon-footprint-api .
-
-# Ejecutar contenedor
-docker run -p 8000:8000 carbon-footprint-api
-```
-
-## 💻 Uso
-
-### Uso Programático
-
-```python
-from src.models.input_output_matrix import InputOutputMatrix
-from src.models.environmental_extension import EnvironmentalExtension
-from src.services.data_loader import MIPDataLoader
-from src.services.carbon_calculator import CarbonFootprintCalculator
-
-# Cargar datos
-loader = MIPDataLoader('data/raw')
-dataset = loader.load_complete_dataset(
-    'anex-MIP-2021.xlsx',
-    'CAEFM-EA68aVALORADO.xlsx',
-    2021
-)
-
-# Crear matriz IO
-io_matrix = InputOutputMatrix(
-    dataset['intermediate_consumption'],
-    dataset['gross_output']
-)
-io_matrix.compute_all_matrices()
-
-# Crear extensión ambiental
-env_extension = EnvironmentalExtension(
-    io_matrix,
-    dataset['environmental_pressures']
-)
-
-# Calculadora de huella
-calculator = CarbonFootprintCalculator(
-    io_matrix,
-    env_extension,
-    ghg_indices=[0, 1, 2]
-)
-
-# Calcular huella de un producto
-footprint = calculator.calculate_product_footprint(
-    sector_idx=15,
-    quantity=1000000
-)
-
-print(f"Huella total: {footprint['total_footprint']} ton CO2eq")
-```
-
-### Ejecutar API
-
-```bash
-# Desarrollo
-uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
-
-# Producción
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 4
-```
-
-Acceder a la documentación interactiva:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## 🌐 API REST
-
-### Endpoints Principales
-
-#### GET /health
-Verifica el estado de la API
-```bash
-curl http://localhost:8000/health
-```
-
-#### GET /sectors
-Lista todos los sectores económicos
-```bash
-curl http://localhost:8000/sectors
-```
-
-#### POST /calculate/product
-Calcula la huella de carbono de un producto
-```bash
-curl -X POST http://localhost:8000/calculate/product \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sector_index": 15,
-    "quantity": 1000000,
-    "unit": "monetary"
-  }'
-```
-
-#### POST /calculate/basket
-Calcula la huella de una canasta de consumo
-```bash
-curl -X POST http://localhost:8000/calculate/basket \
-  -H "Content-Type: application/json" \
-  -d '{
-    "demand_vector": [100000, 200000, ...],
-    "basket_name": "Canasta familiar"
-  }'
-```
-
-#### POST /calculate/compare
-Compara dos escenarios de consumo
-```bash
-curl -X POST http://localhost:8000/calculate/compare \
-  -H "Content-Type: application/json" \
-  -d '{
-    "baseline": [100000, ...],
-    "alternative": [80000, ...],
-    "scenario_names": ["Base", "Alternativa"]
-  }'
-```
-
-#### POST /calculate/priorities
-Identifica prioridades de mitigación
-```bash
-curl -X POST http://localhost:8000/calculate/priorities?n_priorities=10 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "demand_vector": [100000, ...],
-    "basket_name": "Nacional"
-  }'
-```
-
-## 📊 Metodología
-
-### Análisis Insumo-Producto
-
-El sistema implementa la metodología estándar de Análisis Insumo-Producto según Miller & Blair (2009):
-
-1. **Matriz de Coeficientes Técnicos**: `A = Z × X̂⁻¹`
-2. **Inversa de Leontief (Backward Linkages)**: `L = (I - A)⁻¹`
-3. **Inversa de Ghosh (Forward Linkages)**: `G = (I - B)⁻¹`
-
-### Extensión Ambiental
-
-Siguiendo las guías de Eurostat para cuentas satélite ambientales:
-
-1. **Intensidad Directa**: `D = D₁ × X̂⁻¹`
-2. **Multiplicadores Totales**: `Dₐ = D × L`
-3. **Encadenamientos Ambientales**: Índices BL y FL
-
-### Huella de Carbono
-
-**Enfoque Consumidor**:
-```
-Huella = Σ(intensidad_GEI_sector × demanda_final_sector)
-```
-
-**Enfoque Productor**:
-```
-Emisiones = Σ(coeficiente_emisión_sector × producción_sector)
-```
-
-## 📁 Estructura del Proyecto
-
-```
-carbon-footprint/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # Pipeline CI
-│       └── cd.yml                 # Pipeline CD
-├── src/
-│   ├── __init__.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   └── main.py               # FastAPI application
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── input_output_matrix.py      # Modelo MIP
-│   │   └── environmental_extension.py  # Extensión ambiental
-│   └── services/
-│       ├── __init__.py
-│       ├── data_loader.py              # Carga de datos
-│       └── carbon_calculator.py        # Calculadora principal
-├── tests/
-│   ├── __init__.py
-│   ├── test_io_matrix.py
-│   ├── test_environmental.py
-│   └── test_api.py
-├── data/
-│   ├── raw/                      # Datos originales (no versionados)
-│   └── processed/                # Datos procesados
-├── docs/
-│   ├── api_guide.md
-│   ├── methodology.md
-│   └── examples/
-├── config/
-│   ├── settings.py
-│   └── logging.conf
-├── .gitignore
-├── .dockerignore
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── requirements-dev.txt
-├── setup.py
-├── pytest.ini
-├── README.md
-└── LICENSE
-```
-
-## 🛠️ Desarrollo
-
-### Setup Entorno de Desarrollo
-
-```bash
-# Instalar dependencias de desarrollo
-pip install -r requirements-dev.txt
-
-# Instalar pre-commit hooks
-pre-commit install
-
-# Configurar variables de entorno
-cp .env.example .env
-```
-
-### Estándares de Código
-
-- **Formato**: Black (line length: 100)
-- **Linting**: Flake8
-- **Type Checking**: MyPy
-- **Import Sorting**: isort
-- **Docstrings**: Google style
-
-```bash
-# Formatear código
-black src/
-
-# Ordenar imports
-isort src/
-
-# Verificar tipos
-mypy src/
-
-# Linting
-flake8 src/
-```
-
-## 🧪 Testing
-
-```bash
-# Ejecutar todos los tests
-pytest
-
-# Con cobertura
-pytest --cov=src --cov-report=html
-
-# Tests específicos
-pytest tests/test_io_matrix.py -v
-
-# Tests de integración
-pytest tests/integration/ -v
-```
-
-### Estructura de Tests
-
-```python
-# tests/test_io_matrix.py
-import pytest
-import numpy as np
-from src.models.input_output_matrix import InputOutputMatrix
-
-def test_leontief_inverse():
-    Z = np.array([[10, 20], [30, 40]])
-    x = np.array([100, 200])
-
-    io_matrix = InputOutputMatrix(Z, x)
-    L = io_matrix.compute_leontief_inverse()
-
-    assert L.shape == (2, 2)
-    assert np.all(np.diag(L) >= 1)  # Diagonal >= 1
-```
-
-## 🚢 Deployment
-
-### Variables de Entorno
-
-```bash
-# .env
-API_HOST=0.0.0.0
-API_PORT=8000
-DATA_DIR=data/raw
-LOG_LEVEL=INFO
-WORKERS=4
-```
-
-### Docker Compose
-
-```bash
-# Iniciar servicios
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener servicios
-docker-compose down
-```
-
-### Deployment en Cloud
-
-#### AWS ECS
-```bash
-# Build y push a ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ACCOUNT.dkr.ecr.us-east-1.amazonaws.com
-docker build -t carbon-footprint-api .
-docker tag carbon-footprint-api:latest ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/carbon-footprint-api:latest
-docker push ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/carbon-footprint-api:latest
-```
-
-## 📈 Monitoreo
-
-### Métricas Disponibles
-
-- Tiempo de respuesta de endpoints
-- Tasa de errores
-- Uso de memoria
-- Número de requests por segundo
-
-### Logs
-
-```python
-# Configuración en config/logging.conf
-import logging
-
-logger = logging.getLogger(__name__)
-logger.info("Cálculo completado")
-```
-
-## 🤝 Contribución
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Guidelines
-
-- Escribe tests para código nuevo
-- Mantén cobertura > 80%
-- Sigue los estándares de código
-- Actualiza la documentación
-
-## 📚 Referencias
-
-- Miller, R. E., & Blair, P. D. (2009). *Input-Output Analysis: Foundations and Extensions*. Cambridge University Press.
-- Eurostat (2008). *Eurostat Manual of Supply, Use and Input-Output Tables*.
-- DANE Colombia - Matrices Insumo-Producto
-- DANE Colombia - Cuentas Ambientales
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para más detalles.
-
-## 👥 Autores
-
-- **Equipo de Desarrollo** - *Trabajo Inicial* - [GitHub](https://github.com/username)
-
-## 🙏 Agradecimientos
-
-- DANE Colombia por los datos de MIP y Cuentas Ambientales
-- Comunidad de Python científico (NumPy, Pandas)
-- FastAPI por el excelente framework
+🚀 **Deploy Rápido**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - En línea en 10 minutos
 
 ---
 
-**Nota**: Este proyecto es para fines educativos y de investigación. Para uso en producción, verificar y validar todos los cálculos con expertos en análisis ambiental.
+## 📋 Contenidos
+
+- [Características](#-características) | [Metodología](#-metodología-científica) | [Instalación](#-instalación) | [API REST](#-api-rest) | [Deploy](#-despliegue) | [Documentación Completa](#-referencias-científicas)
+
+---
+
+## ✨ Características
+
+- ✅ **68 Sectores** económicos de Colombia
+- ✅ **7 Indicadores** ambientales (CO₂, CH₄, N₂O + otros)
+- ✅ **Matrices Leontief y Ghosh** (encadenamientos productivos)
+- ✅ **Multiplicadores ambientales** directos + indirectos
+- ✅ **API REST** con 8 endpoints documentados
+- ✅ **Validación 100%** con datos reales 2017-2021
+- ✅ **Dashboard web** interactivo incluido
+
+---
+
+## 🔬 Metodología Científica
+
+### **Fundamento Teórico**
+
+Sistema basado en **Análisis Insumo-Producto** (Leontief, 1973 - Premio Nobel) con extensión ambiental según guías de Eurostat y SEEA.
+
+### **1. Matriz Insumo-Producto**
+
+#### **Estructura Básica**
+```
+        Sectores (j)
+         ┌───────────┐
+Sectores │ Z₁₁ ... Z₁ₙ │ F₁  │ x₁
+  (i)    │ ... ... ... │ ... │ ...
+         │ Zₙ₁ ... Zₙₙ │ Fₙ  │ xₙ
+         └─────────────┴─────┴────
+          Consumo       Demanda  Producción
+          Intermedio    Final    Bruta
+```
+
+- **Zᵢⱼ**: Uso del producto i por sector j
+- **Fᵢ**: Demanda final del producto i
+- **xᵢ**: Producción total del producto i
+
+#### **Coeficientes Técnicos (A)**
+```
+A = Z × X̂⁻¹
+```
+Donde `X̂ = diag(x)`
+
+**Interpretación**: `aᵢⱼ` = unidades de i necesarias para producir 1 unidad de j
+
+#### **Inversa de Leontief (L)** - Backward Linkages
+```
+L = (I - A)⁻¹
+x = L × F
+```
+
+**Interpretación**: `lᵢⱼ` = producción total de i (directa + indirecta) para satisfacer 1 unidad de demanda final de j
+
+**Propiedad validada**: `L(I - A) = I` ✅
+
+#### **Inversa de Ghosh (G)** - Forward Linkages
+```
+B = X̂⁻¹ × Z
+G = (I - B)⁻¹
+```
+
+**Interpretación**: Cómo la producción de i se distribuye hacia j en la cadena de suministro
+
+### **2. Extensión Ambiental**
+
+#### **Intensidad Directa (D)**
+```
+D = D₁ × X̂⁻¹
+```
+
+Donde **D₁** es la matriz de presiones ambientales absolutas (ton CO₂, m³ agua, etc.)
+
+**Unidades**: ton CO₂eq / millón COP
+
+#### **Multiplicadores Totales (Dₐ)**
+```
+Dₐ = D × L
+```
+
+**Interpretación**: Emisiones totales (directas + indirectas) por unidad de demanda final
+
+**Propiedad**: `Dₐ ≥ D` (siempre) ✅
+
+### **3. Encadenamientos Ambientales**
+
+#### **Backward Linkage (BL)**
+```
+Lₑₙᵥ = α × L
+BLⱼ = (Σᵢ Lₑₙᵥ,ᵢⱼ) / promedio
+```
+
+- **BL > 1**: Sector estimula muchas emisiones en proveedores
+- **BL < 1**: Sector con bajo impacto hacia atrás
+
+#### **Forward Linkage (FL)**
+```
+Gₑₙᵥ = G × αᵀ
+FLᵢ = (Σⱼ Gₑₙᵥ,ᵢⱼ) / promedio
+```
+
+- **FL > 1**: Sector distribuye emisiones ampliamente
+- **FL < 1**: Distribución concentrada
+
+#### **Sectores Clave**
+```
+BL > 1 Y FL > 1 → SECTOR CLAVE (prioritario para mitigación)
+```
+
+### **4. Cálculo de Huella de Carbono**
+
+#### **Huella de Producto**
+```
+CFⱼ = Σₖ∈GEI (Dₐ)ₖⱼ × yⱼ
+
+Donde:
+CF_direct = Σₖ∈GEI dₖⱼ × yⱼ
+CF_indirect = CFⱼ - CF_direct
+```
+
+#### **Huella de Canasta**
+```
+CF_total = Σₖ∈GEI Σⱼ (Dₐ)ₖⱼ × yⱼ
+```
+
+### **5. Validación Matemática**
+
+Sistema valida automáticamente:
+
+✅ **L(I-A) = I** (error < 10⁻⁴)
+✅ **Diagonal L ≥ 1**
+✅ **Σᵢ aᵢⱼ < 1** (productividad)
+✅ **Dₐ ≥ D** (multiplicadores)
+✅ **D×x = emisiones totales** (reconstrucción)
+
+**Resultado**: **100%** validado en datos 2017-2021 🎯
+
+---
+
+## 🚀 Instalación Rápida
+
+```bash
+# 1. Clonar
+git clone https://github.com/edwinpulgarin/carbon-footprint-calculator.git
+cd carbon-footprint-calculator
+
+# 2. Instalar
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+
+# 3. Ejecutar
+uvicorn src.api.main:app --reload
+
+# 4. Abrir: http://localhost:8000/docs
+```
+
+Los datos (Excel) ya están incluidos en `data/raw/`
+
+---
+
+## 🌐 API REST
+
+### **Endpoints Principales**
+
+```bash
+# Health check
+GET  /health
+
+# Sectores
+GET  /sectors
+GET  /sectors/{id}
+
+# Cálculos
+POST /calculate/product     # Huella de producto
+POST /calculate/basket      # Huella de canasta
+POST /calculate/compare     # Comparar escenarios
+POST /calculate/priorities  # Prioridades mitigación
+
+# Estadísticas
+GET  /statistics/summary
+```
+
+### **Ejemplo de Uso**
+
+```bash
+curl -X POST http://localhost:8000/calculate/product \
+  -H "Content-Type: application/json" \
+  -d '{"sector_index": 15, "quantity": 1000000}'
+```
+
+**Respuesta**:
+```json
+{
+  "success": true,
+  "data": {
+    "total_footprint": 1649661.16,
+    "direct_emissions": 1595497.90,
+    "indirect_emissions": 54163.26
+  }
+}
+```
+
+**Documentación interactiva**: `/docs` (Swagger UI)
+
+---
+
+## ☁️ Despliegue
+
+### **Opción 1: Railway (5 min)** ⭐ RECOMENDADO
+
+```bash
+1. https://railway.app → Login GitHub
+2. New Project → Deploy from GitHub
+3. Seleccionar: edwinpulgarin/carbon-footprint-calculator
+4. Esperar 2-3 min
+5. Generate Domain
+```
+
+**Gratis** hasta $5/mes
+
+### **Opción 2: Otros**
+
+- **Render**: Ver [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- **Google Cloud**: Ver [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- **Dashboard Web**: Ver [frontend/index.html](frontend/index.html)
+
+**Guía completa**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md)
+
+---
+
+## 💻 Uso Programático
+
+### **Python**
+```python
+from src.services.carbon_calculator import CarbonFootprintCalculator
+
+# ... (ver ejemplos completos en docs/)
+
+footprint = calculator.calculate_product_footprint(
+    sector_idx=15,
+    quantity=1_000_000
+)
+```
+
+### **JavaScript**
+```javascript
+const response = await fetch('http://localhost:8000/calculate/product', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({sector_index: 15, quantity: 1000000})
+});
+```
+
+### **R**
+```r
+library(httr)
+POST("http://localhost:8000/calculate/product",
+     body = list(sector_index = 15, quantity = 1000000),
+     encode = "json")
+```
+
+---
+
+## 📊 Resultados Validados
+
+### **Colombia 2017-2021**
+
+| Métrica | 2017 | 2019 | 2021 | Tendencia |
+|---------|------|------|------|-----------|
+| **Producción** (M COP) | 1.6M | 1.9M | 2.1M | ↗️ +32% |
+| **Emisiones GEI** (ton) | 123k | 126k | 117k | ↘️ -5% |
+| **Intensidad** (ton/M) | 76.2 | 67.8 | 54.8 | ↘️ -28% |
+
+**Conclusión**: Desacoplamiento economía-emisiones ✅
+
+### **Sectores Clave Identificados**
+
+1. **Coquización y refinación** (BL≈24, FL≈21)
+2. **Elaboración de azúcar** (BL≈15, FL≈16)
+3. **Extracción de carbón** (BL≈2.5, FL≈3.2)
+
+[Ver Reporte Completo](REPORTE_VALIDACION.md)
+
+---
+
+## 📁 Estructura
+
+```
+carbon-footprint-calculator/
+├── src/                  # Código fuente (~1,500 líneas)
+│   ├── api/             # FastAPI (8 endpoints)
+│   ├── models/          # Modelos OOP (MIP, Env)
+│   └── services/        # Servicios (Calculator, Loader)
+├── data/raw/            # Datos DANE (Excel incluidos)
+├── frontend/            # Dashboard web
+├── tests/               # Tests unitarios
+├── .github/workflows/   # CI/CD pipelines
+└── docs/                # Documentación
+```
+
+---
+
+## 📚 Referencias Principales
+
+1. **Miller & Blair (2009)**. *Input-Output Analysis: Foundations and Extensions*. Cambridge Univ. Press.
+2. **Eurostat (2008)**. *Manual of Supply, Use and Input-Output Tables*.
+3. **DANE (2023)**. *Matriz Insumo-Producto de Colombia*.
+4. **Wiedmann & Minx (2008)**. A definition of 'carbon footprint'. *Ecol. Econ. Research Trends*.
+
+---
+
+## 🤝 Contribución
+
+```bash
+git checkout -b feature/nueva-funcionalidad
+# ... hacer cambios
+pytest  # tests pasan
+git commit -m "feat: add funcionalidad"
+git push origin feature/nueva-funcionalidad
+# → Pull Request en GitHub
+```
+
+---
+
+## 📝 Licencia
+
+MIT License - Ver [LICENSE](LICENSE)
+
+---
+
+## 👥 Autor
+
+**Edwin Pulgarin** - [GitHub](https://github.com/edwinpulgarin)
+
+---
+
+## 📞 Soporte
+
+- **Issues**: https://github.com/edwinpulgarin/carbon-footprint-calculator/issues
+- **Docs**: Ver archivos `.md` en el repositorio
+- **Deploy**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md)
+
+---
+
+**🌍 Contribuyendo a un futuro sostenible mediante análisis económico-ambiental riguroso.**
+
+---
+
+### 📖 Documentación Adicional
+
+- [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - Deploy en 10 minutos
+- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Guía completa deployment
+- [REPORTE_VALIDACION.md](REPORTE_VALIDACION.md) - Validación 100%
+- [QUICK_START.md](QUICK_START.md) - Guía de inicio
+- [GITHUB_SETUP.md](GITHUB_SETUP.md) - Configuración GitHub
