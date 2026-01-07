@@ -62,8 +62,7 @@ class MIPDataLoader:
     def load_environmental_accounts(self,
                                    filename: str,
                                    year: int,
-                                   sheet: Optional[str] = None,
-                                   cell_range: str = "A3:BR10") -> np.ndarray:
+                                   sheet: Optional[str] = None) -> np.ndarray:
         """
         Carga las cuentas ambientales
 
@@ -71,7 +70,6 @@ class MIPDataLoader:
             filename: Nombre del archivo Excel
             year: Año de las cuentas
             sheet: Nombre de la hoja (si None, usa el año como nombre)
-            cell_range: Rango de celdas a leer
 
         Returns:
             Matriz de presiones ambientales (m x n)
@@ -84,28 +82,41 @@ class MIPDataLoader:
 
         sheet_name = sheet if sheet else str(year)
 
-        # Cargar datos
+        # Cargar datos sin headers
         df = pd.read_excel(filepath, sheet_name=sheet_name, header=None)
 
-        # Extraer rango especificado
-        # Parsear el rango (ej: "A3:BR10")
-        start_cell, end_cell = cell_range.split(":")
+        # La estructura es:
+        # Fila 0: Título general
+        # Fila 1: Códigos CIIU
+        # Fila 2: Nombres de sectores
+        # Fila 3+: Datos numéricos de indicadores ambientales
 
-        # Convertir letras de columna a índices
-        def col_to_idx(col_str):
-            idx = 0
-            for char in col_str:
-                idx = idx * 26 + (ord(char.upper()) - ord('A') + 1)
-            return idx - 1
+        # Extraer solo las filas de datos (desde fila 3) y columnas de sectores (desde columna 2)
+        start_row = 3
+        data_rows = []
 
-        start_col = col_to_idx(''.join(filter(str.isalpha, start_cell)))
-        start_row = int(''.join(filter(str.isdigit, start_cell))) - 1
+        for idx in range(start_row, min(start_row + 20, len(df))):  # Máximo 20 indicadores
+            try:
+                # Intentar convertir la fila a numéricos (excluyendo primeras 2 columnas)
+                row_data = pd.to_numeric(df.iloc[idx, 2:70], errors='coerce')
 
-        end_col = col_to_idx(''.join(filter(str.isalpha, end_cell)))
-        end_row = int(''.join(filter(str.isdigit, end_cell))) - 1
+                # Si más del 50% son NaN, probablemente no es una fila de datos
+                if row_data.notna().sum() / len(row_data) > 0.5:
+                    data_rows.append(row_data.values)
+                else:
+                    break
+            except:
+                break
 
-        # Extraer datos (sin columnas de identificadores)
-        env_data = df.iloc[start_row:end_row + 1, start_col + 2:end_col + 1].values.astype(float)
+        if len(data_rows) == 0:
+            raise ValueError(f"No se pudieron extraer datos numéricos del archivo {filename}")
+
+        # Convertir a matriz numpy
+        env_data = np.array(data_rows, dtype=float)
+
+        # Asegurarse de que tiene 68 columnas (sectores)
+        if env_data.shape[1] > 68:
+            env_data = env_data[:, :68]
 
         return env_data
 
